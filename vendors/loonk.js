@@ -825,12 +825,12 @@ class Loonk {
     
       if (closestPointIndex !== -1) 
       { 
-        _target.classList.add(LOONK_PATH_CLASS_HOVER)
+        _target.addClass(LOONK_PATH_CLASS_HOVER)
         
       } 
       else 
       {
-        _target.classList.remove(LOONK_PATH_CLASS_HOVER)
+        _target.removeClass(LOONK_PATH_CLASS_HOVER)
       }
 
     }
@@ -863,7 +863,7 @@ class Loonk {
     {
       this.m_path = _elem.m_path;
       this.m_currentPath = _elem;
-      _elem.classList.remove(LOONK_PATH_CLASS_HOVER);
+      _elem.removeClass(LOONK_PATH_CLASS_HOVER);
 
       this.m_drawState = DRAW_STATE.MODIFY;
       this.m_mouseState = MOUSE_STATE.DEFAULT;
@@ -1483,6 +1483,8 @@ class Loonk {
           // this.initPath()
 
           // console.log(this.m_path.m_points)
+
+          this.m_currentPath.draggable();
       
       }
 
