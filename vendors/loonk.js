@@ -21,6 +21,12 @@
   const MIN_HOVER_DIST = 40;
 
 
+  const MENU_CONTEXT = {
+    NONE:0,
+    MOVE:1,
+    DRAW:2,
+    EDIT:3
+  }
   // States
   const DRAW_STATE = {
     NONE:0,
@@ -50,6 +56,8 @@
 
   var CONTROL_DOWN_KEY = "17";
   var P_DOWN_KEY = "KeyP";
+  var D_DOWN_KEY = "KeyD";
+  var E_DOWN_KEY = "KeyE";
  ////////////////////////
 
 
@@ -308,6 +316,7 @@ class Loonk {
 
     this.m_drawState = DRAW_STATE.NONE;
     this.m_pathState = PATH_STATE.NONE; 
+    this.m_menuContext = MENU_CONTEXT.NONE; 
     
 
   }
@@ -351,6 +360,8 @@ class Loonk {
       this.m_newPointPrev = null;
       this.m_newPointNext = null;
 
+      this.m_generatedPath = '';
+
       // Define controls container
       ControlPoint.prototype.m_root = this
       EndPoint.prototype.m_root = this
@@ -378,13 +389,29 @@ class Loonk {
 
     }
 
+    quitDrawState()
+    {
+      this.resetPath();
+                
+      this.m_drawState = DRAW_STATE.NONE;
+      this.m_mouseState = MOUSE_STATE.DEFAULT;
+      this.m_pathState = PATH_STATE.NONE;
+
+      this.removePredictorPath();
+      this.removeControls();
+
+      this.m_svg.removeEventListener('mousedown', null, true)
+      this.m_svg.removeEventListener('mousemove', null, true)
+    }
+
     initSelectable(_elem)
     {
        
+
       this.m_svg.addEventListener('mousemove', (e)=>{
-        
+      
         var pos = this.positionToCanvas(e.clientX, e.clientY)
-        if(this.m_drawState == DRAW_STATE.NONE)
+        if(this.m_drawState == DRAW_STATE.NONE && this.m_menuContext == MENU_CONTEXT.DRAW)
         {
           this.hoverPathAtDist(_elem, pos.x, pos.y)
           return;
@@ -396,7 +423,7 @@ class Loonk {
 
         var pos = this.positionToCanvas(e.clientX, e.clientY)
         // On unselected path and NONE(/MODIFY) mode : Select abd activate that path
-        if(this.m_drawState == DRAW_STATE.NONE)
+        if(this.m_drawState == DRAW_STATE.NONE && this.m_menuContext == MENU_CONTEXT.DRAW)
         {
           this.selectPathAtDist(_elem, pos.x, pos.y)
         }
@@ -404,11 +431,17 @@ class Loonk {
 
     }
 
+    
     // select a path and (re)activate it
     selectPath(e)
     {
       var target = e.target;
       this.m_path = target.m_path; // Set new path to this element m_path property
+    }
+
+    getMenuContext()
+    {
+      return this.m_menuContext;
     }
  
     // the positoin on canvas
@@ -627,24 +660,38 @@ class Loonk {
           this.render()
           break;
         case "Enter" :
-          if(this.m_path.m_points.length > 1)
+          if(!this.m_path.isClosed)
           {
-            this.render()
+
+            if(this.m_path.m_points.length > 1)
+            {
+              this.render()
+            }
+            
+            this.quitDrawState();
+                
+            // Get Internal points...
+            this.updatePathInternalPoints(); 
+
+            this.setCursor("arrow")
+
+            this.m_currentPath.remove(); // remove helper
+
+            var path = window.m_svgIntance.path(this.m_generatedPath)
+            path._points = this.m_path.m_points;
+            path.m_path = this.m_currentPath.m_path;
+            path.fill("yellow")
+            path.selectize(this)
+            path.draggable(this)
+
+            console.log(path)
+
+            // this.m_currentPath.attr(this.m_generatedPath)
+            // this.m_currentPath.fill("yellow")
+            // this.m_currentPath.draggable();
+            
           }
-          
-          this.resetPath();
-              
-          this.m_drawState = DRAW_STATE.NONE;
-          this.m_mouseState = MOUSE_STATE.DEFAULT;
-          this.m_pathState = PATH_STATE.NONE;
 
-          this.removePredictorPath();
-          this.removeControls();
-              
-          // Get Internal points...
-          this.updatePathInternalPoints(); 
-
-          this.setCursor("arrow")
         
           break;
          
@@ -657,10 +704,27 @@ class Loonk {
       // Re-Start new Pen tool
       if(e.code == P_DOWN_KEY)
       {
+        console.log("DRAW CONTEXT")
+
+        this.m_menuContext = MENU_CONTEXT.DRAW;
         if(this.m_drawState == DRAW_STATE.NONE)
         {
           this.initPath();
         }
+      }
+
+      if(e.code == D_DOWN_KEY)
+      {
+        console.log("DRAG CONTEXT")
+        this.quitDrawState();
+        this.m_menuContext = MENU_CONTEXT.MOVE;
+      }
+
+      if(e.code == E_DOWN_KEY)
+      {
+        console.log("EDIT CONTEXT")
+        this.quitDrawState();
+        this.m_menuContext = MENU_CONTEXT.EDIT;
       }
 
 
@@ -858,7 +922,7 @@ class Loonk {
         this.activatePath(_target)
       }
     }
-
+ 
     activatePath(_elem)
     {
       this.m_path = _elem.m_path;
@@ -1028,7 +1092,7 @@ class Loonk {
     {
       return this.m_path.m_points.findIndex(p=>(p.x == _point.x && p.y == _point.y));
     }
-
+    
     toggleExtremity(_elem)
     {
       var _pointIndex = this.m_path.m_points.findIndex(p=>p.element == _elem)
@@ -1458,6 +1522,7 @@ class Loonk {
 
       // Update selection
       this.updateSelection();
+      // this.m_generatedPath = '';
 
       let len = this.m_path.m_points.length
       for(let i = 0; i < len; i++) {
@@ -1465,29 +1530,32 @@ class Loonk {
         ep.printControlPoints()
         if(!this.m_pathStarted)
         {
-            this.m_currentPath.attr("d", "M"+ep.x + "," + ep.y)
+            this.m_generatedPath = "M"+ep.x + "," + ep.y;
+            this.m_currentPath.attr("d",  this.m_generatedPath)
             this.m_pathStarted = true
         }
         if(i > 0) {
           // draw line
           prev_ep = this.m_path.m_points[i - 1];
-          this.bezierCurveTo(prev_ep, ep)
+          this.m_generatedPath += this.bezierCurveTo(prev_ep, ep)
         }
       }
       if(this.m_path.m_isClosed){
           prev_ep = this.m_path.m_points[len - 1]
           ep = this.m_path.m_points[0]
-          this.bezierCurveTo(prev_ep, ep)
+          this.m_generatedPath += this.bezierCurveTo(prev_ep, ep)
 
-          // Init new path....
-          // this.initPath()
+          // this.finalizePath();
 
-          // console.log(this.m_path.m_points)
-
-          this.m_currentPath.draggable();
-      
+          
       }
 
+    }
+
+    finalizePath()
+    {
+      this.m_currentPath.fill("yellow")
+      this.m_currentPath.draggable();
     }
   
     bezierCurveTo(prev_ep, ep) {
@@ -1506,6 +1574,8 @@ class Loonk {
 
         }
         
+
+        return d;
         
     }
 

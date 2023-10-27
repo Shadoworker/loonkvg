@@ -1,7 +1,7 @@
 /*!
-* @svgdotjs/svg.draggable.js - An extension for svg.js which allows to drag elements with your mouse
+* @svgdotjs/svg.repath.js - An extension for svg.js which allows to drag elements with your mouse
 * @version 3.0.2
-* https://github.com/svgdotjs/svg.draggable.js
+* https://github.com/svgdotjs/svg.repath.js
 *
 * @copyright Wout Fierens
 * @license MIT
@@ -48,16 +48,14 @@
   var DragHandler =
   /*#__PURE__*/
   function () {
-    function DragHandler(el, _loonki) {
+    function DragHandler(el) {
       _classCallCheck(this, DragHandler);
 
-      el.remember('_draggable', this);
+      el.remember('_repath', this);
       this.el = el;
-      this._loonki = _loonki;
       this.drag = this.drag.bind(this);
       this.startDrag = this.startDrag.bind(this);
       this.endDrag = this.endDrag.bind(this);
-      this.m_menuContext = _loonki.m_menuContext;
     } // Enables or disabled drag based on input
 
 
@@ -76,10 +74,6 @@
     }, {
       key: "startDrag",
       value: function startDrag(ev) {
-
-        if(this._loonki.getMenuContext() != MENU_CONTEXT.MOVE)
-          return;
-
         var isMouse = !ev.type.indexOf('mouse'); // Check for left button
 
         if (isMouse && (ev.which || ev.buttons) !== 1) {
@@ -110,7 +104,7 @@
         svg_js.on(window, eventMove, this.drag);
         svg_js.on(window, eventEnd, this.endDrag); // Fire dragstart event
 
-        this.el.fire('dragstart', {
+        this.el.fire('mousedown', {
           event: ev,
           handler: this,
           box: this.box
@@ -171,13 +165,13 @@
   }();
 
   svg_js.extend(svg_js.Element, {
-    draggable: function draggable(_this) {
+    repath: function repath() {
       var enable = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
-      var dragHandler = this.remember('_draggable') || new DragHandler(this, _this);
+      var dragHandler = this.remember('_repath') || new DragHandler(this);
       dragHandler.init(enable);
       return this;
     }
   });
 
 }(SVG));
-//# sourceMappingURL=svg.draggable.js.map
+//# sourceMappingURL=svg.repath.js.map
