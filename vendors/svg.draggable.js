@@ -77,44 +77,55 @@
       key: "startDrag",
       value: function startDrag(ev) {
 
-        if(this._loonki.getMenuContext() != MENU_CONTEXT.MOVE)
-          return;
+        if(this._loonki.getMenuContext() == MENU_CONTEXT.MOVE)
+        {
 
-        var isMouse = !ev.type.indexOf('mouse'); // Check for left button
+          var isMouse = !ev.type.indexOf('mouse'); // Check for left button
 
-        if (isMouse && (ev.which || ev.buttons) !== 1) {
-          return;
-        } // Fire beforedrag event
-
-
-        if (this.el.dispatch('beforedrag', {
-          event: ev,
-          handler: this
-        }).defaultPrevented) {
-          return;
-        } // Prevent browser drag behavior as soon as possible
+          if (isMouse && (ev.which || ev.buttons) !== 1) {
+            return;
+          } // Fire beforedrag event
 
 
-        ev.preventDefault(); // Prevent propagation to a parent that might also have dragging enabled
+          if (this.el.dispatch('beforedrag', {
+            event: ev,
+            handler: this
+          }).defaultPrevented) {
+            return;
+          } // Prevent browser drag behavior as soon as possible
 
-        ev.stopPropagation(); // Make sure that start events are unbound so that one element
-        // is only dragged by one input only
 
-        this.init(false);
-        this.box = this.el.bbox();
-        this.lastClick = this.el.point(getCoordsFromEvent(ev)); // We consider the drag done, when a touch is canceled, too
+          ev.preventDefault(); // Prevent propagation to a parent that might also have dragging enabled
 
-        var eventMove = (isMouse ? 'mousemove' : 'touchmove') + '.drag';
-        var eventEnd = (isMouse ? 'mouseup' : 'touchcancel.drag touchend') + '.drag'; // Bind drag and end events to window
+          ev.stopPropagation(); // Make sure that start events are unbound so that one element
+          // is only dragged by one input only
 
-        svg_js.on(window, eventMove, this.drag);
-        svg_js.on(window, eventEnd, this.endDrag); // Fire dragstart event
+          this.init(false);
+          this.box = this.el.bbox();
+          this.lastClick = this.el.point(getCoordsFromEvent(ev)); // We consider the drag done, when a touch is canceled, too
 
-        this.el.fire('dragstart', {
-          event: ev,
-          handler: this,
-          box: this.box
-        });
+          var eventMove = (isMouse ? 'mousemove' : 'touchmove') + '.drag';
+          var eventEnd = (isMouse ? 'mouseup' : 'touchcancel.drag touchend') + '.drag'; // Bind drag and end events to window
+
+          svg_js.on(window, eventMove, this.drag);
+          svg_js.on(window, eventEnd, this.endDrag); // Fire dragstart event
+
+          this.el.fire('dragstart', {
+            event: ev,
+            handler: this,
+            box: this.box
+          });
+
+
+          var elType = this.el.type;
+          if(elType == "path")
+          {
+            var newPath = this.el.attr("d");
+            this._loonki.updateElementPoints(newPath, this.el);
+          }
+
+        }
+
       } // While dragging
 
     }, {
@@ -157,11 +168,22 @@
           handler: this,
           box: box
         }); // unbind events
+        
 
         svg_js.off(window, 'mousemove.drag');
         svg_js.off(window, 'touchmove.drag');
         svg_js.off(window, 'mouseup.drag');
         svg_js.off(window, 'touchend.drag'); // Rebind initial Events
+        
+        var elType = this.el.type;
+        if(elType == "path")
+        {
+          var newPath = this.el.attr("d");
+          this._loonki.updateElementPoints(newPath, this.el);
+        }
+   
+        
+        console.log(this.el.type)
 
         this.init(true);
       }

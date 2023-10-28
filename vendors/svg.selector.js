@@ -8,11 +8,16 @@ SVG.extend(SVG.Element, {
 
       // Add a click event listener to toggle selection
       this.click(function() {
-          this.toggleClass('selected');
           
-          if(_loonki.getMenuContext() != MENU_CONTEXT.EDIT)
-            return;
-          _loonki.activatePath(this)
+          console.log(_loonki.getMenuContext())
+
+          if(_loonki.getMenuContext() == MENU_CONTEXT.EDIT)
+          {
+            this.toggleClass('selected');
+
+            console.log("Edit")
+            _loonki.activatePath(this)
+          }
       });
 
       // Return the modified element

@@ -2693,7 +2693,7 @@ var SVG = (function () {
       this.dom = {}; // create circular reference
 
       this.node.instance = this;
-      this._points = [];
+      this.m_path = null;
 
       if (node.hasAttribute('svgjs:data')) {
         // pull svgjs data from the dom (getAttributeNS doesn't work in html5)

@@ -20,13 +20,19 @@
   const SCENE_HEIGHT = 600;
   const MIN_HOVER_DIST = 40;
 
+  const COMPUTE_INTERNAL_POINTS_DELAY = 100; // 0.1s : 1000 = 1s
+
 
   const MENU_CONTEXT = {
-    NONE:0,
-    MOVE:1,
-    DRAW:2,
-    EDIT:3
+    NONE:"",
+    MOVE:"move",
+    DRAW:"pen",
+    EDIT:"arrow"
   }
+
+  const CURSOR_CONTEXT = {...MENU_CONTEXT};
+  CURSOR_CONTEXT.MOVE = "arrow";
+
   // States
   const DRAW_STATE = {
     NONE:0,
@@ -333,7 +339,7 @@ class Loonk {
 
     resetPath()
     {
-            
+
       // // Presets
 
       this.m_drawState = DRAW_STATE.MODIFY;
@@ -385,49 +391,55 @@ class Loonk {
 
       this.initSelectable(this.m_currentPath)
 
-      this.setCursor("pen")
+      this.setCursor(CURSOR_CONTEXT.DRAW)
 
     }
 
     quitDrawState()
     {
       this.resetPath();
-                
+ 
       this.m_drawState = DRAW_STATE.NONE;
       this.m_mouseState = MOUSE_STATE.DEFAULT;
       this.m_pathState = PATH_STATE.NONE;
+      this.m_menuContext = MENU_CONTEXT.MOVE;
 
+      this.removeHelperPath();
       this.removePredictorPath();
       this.removeControls();
 
-      this.m_svg.removeEventListener('mousedown', null, true)
-      this.m_svg.removeEventListener('mousemove', null, true)
+      this.m_svg.removeEventListener('mousedown', this.initSelectableClickHandler, true)
+      this.m_svg.removeEventListener('mousemove', this.initSelectableMoveHandler, true)
     }
 
     initSelectable(_elem)
     {
        
+      this.m_svg.addEventListener('mousemove', this.initSelectableMoveHandler(_elem))
 
-      this.m_svg.addEventListener('mousemove', (e)=>{
-      
-        var pos = this.positionToCanvas(e.clientX, e.clientY)
-        if(this.m_drawState == DRAW_STATE.NONE && this.m_menuContext == MENU_CONTEXT.DRAW)
-        {
-          this.hoverPathAtDist(_elem, pos.x, pos.y)
-          return;
-        }
+      this.m_svg.addEventListener('mousedown', this.initSelectableClickHandler(_elem))
 
-      })
+    }
 
-      this.m_svg.addEventListener('mousedown', (e)=>{
+    initSelectableClickHandler = (e,_elem)=>{
 
-        var pos = this.positionToCanvas(e.clientX, e.clientY)
-        // On unselected path and NONE(/MODIFY) mode : Select abd activate that path
-        if(this.m_drawState == DRAW_STATE.NONE && this.m_menuContext == MENU_CONTEXT.DRAW)
-        {
-          this.selectPathAtDist(_elem, pos.x, pos.y)
-        }
-      })
+      var pos = this.positionToCanvas(e.clientX, e.clientY)
+      // On unselected path and NONE(/MODIFY) mode : Select abd activate that path
+      if(this.m_drawState == DRAW_STATE.NONE && this.m_menuContext == MENU_CONTEXT.DRAW)
+      {
+        this.selectPathAtDist(_elem, pos.x, pos.y)
+      }
+    }
+
+    
+    initSelectableMoveHandler = (e,_elem)=>{
+
+      var pos = this.positionToCanvas(e.clientX, e.clientY)
+      if(this.m_drawState == DRAW_STATE.NONE && this.m_menuContext == MENU_CONTEXT.DRAW)
+      {
+        this.hoverPathAtDist(_elem, pos.x, pos.y)
+        return;
+      }
 
     }
 
@@ -558,7 +570,7 @@ class Loonk {
       let csp = this.m_currentSelectedPoint // current selected point
 
       if(!this.m_path.m_isClosed && this.m_drawState != DRAW_STATE.NONE)
-        this.setCursor("pen")
+        this.setCursor(CURSOR_CONTEXT.DRAW)
 
 
       if(e.buttons != 1) // Not Draging
@@ -615,7 +627,7 @@ class Loonk {
 
             // Dragging endpoint
 
-            this.setCursor("arrow")
+            this.setCursor(CURSOR_CONTEXT.EDIT)
 
             let offset = {
               x: pos.x - csp.x,
@@ -660,7 +672,7 @@ class Loonk {
           this.render()
           break;
         case "Enter" :
-          if(!this.m_path.isClosed)
+          if((this.m_menuContext == MENU_CONTEXT.DRAW || this.m_menuContext == MENU_CONTEXT.EDIT) && !this.m_path.isClosed)
           {
 
             if(this.m_path.m_points.length > 1)
@@ -669,21 +681,20 @@ class Loonk {
             }
             
             this.quitDrawState();
-                
-            // Get Internal points...
-            this.updatePathInternalPoints(); 
-
-            this.setCursor("arrow")
+        
+            this.setCursor(CURSOR_CONTEXT.EDIT)
 
             this.m_currentPath.remove(); // remove helper
 
             var path = window.m_svgIntance.path(this.m_generatedPath)
-            path._points = this.m_path.m_points;
             path.m_path = this.m_currentPath.m_path;
-            path.fill("yellow")
+            path.fill("#fff")
             path.selectize(this)
             path.draggable(this)
-
+ 
+            // Get Internal points...
+            // this.updatePathInternalPoints(); 
+            
             console.log(path)
 
             // this.m_currentPath.attr(this.m_generatedPath)
@@ -718,6 +729,7 @@ class Loonk {
         console.log("DRAG CONTEXT")
         this.quitDrawState();
         this.m_menuContext = MENU_CONTEXT.MOVE;
+        this.setCursor(CURSOR_CONTEXT.MOVE)
       }
 
       if(e.code == E_DOWN_KEY)
@@ -725,6 +737,8 @@ class Loonk {
         console.log("EDIT CONTEXT")
         this.quitDrawState();
         this.m_menuContext = MENU_CONTEXT.EDIT;
+        this.setCursor(CURSOR_CONTEXT.DRAW)
+
       }
 
 
@@ -859,7 +873,7 @@ class Loonk {
       } 
       else 
       {
-        this.setCursor("arrow")
+        this.setCursor(CURSOR_CONTEXT.EDIT)
 
         this.removeHelperPoint();
         this.removeHelperPath();
@@ -1364,7 +1378,7 @@ class Loonk {
       this.m_path.m_isClosed = true // Close previous path
       this.resetPath();
 
-      this.setCursor("arrow")
+      this.setCursor(CURSOR_CONTEXT.EDIT)
 
     }
  
@@ -1373,13 +1387,16 @@ class Loonk {
       var toremove = [];
       switch (_cursor) {
         case "arrow":
-          toremove = ["cursor_pen", "cursor_insert"]
+          toremove = ["cursor_pen", "cursor_insert", "cursor_move"]
           break;
         case "pen":
-          toremove = ["cursor_arrow", "cursor_insert"]
+          toremove = ["cursor_arrow", "cursor_insert", "cursor_move"]
           break;
         case "insert":
-          toremove = ["cursor_arrow", "cursor_pen"]
+          toremove = ["cursor_arrow", "cursor_pen", "cursor_move"]
+        
+        case "move":
+          toremove = ["cursor_arrow", "cursor_pen", "cursor_insert"]
           break;
       }
 
@@ -1537,20 +1554,105 @@ class Loonk {
         if(i > 0) {
           // draw line
           prev_ep = this.m_path.m_points[i - 1];
-          this.m_generatedPath += this.bezierCurveTo(prev_ep, ep)
+          this.m_generatedPath = this.bezierCurveTo(prev_ep, ep)
         }
       }
       if(this.m_path.m_isClosed){
           prev_ep = this.m_path.m_points[len - 1]
           ep = this.m_path.m_points[0]
-          this.m_generatedPath += this.bezierCurveTo(prev_ep, ep)
+          this.m_generatedPath = this.bezierCurveTo(prev_ep, ep)
 
           // this.finalizePath();
 
-          
       }
 
     }
+
+    updateElementPoints(_newPath, _elem){
+      
+      var _currentPoints = _elem.m_path.m_points;
+
+      console.log(_currentPoints)
+      // var newPoints = this.convertPathToPoints(_newPath, _currentPoints);
+      // var _newPoints = this.extractMCParts(_newPath, _currentPoints);
+
+      var commandValues = this.getCommandValues(_newPath)
+      var generatedPoints = this.generatePointsFromCommandValues(commandValues, _currentPoints)
+
+      // console.log(generatedPoints)
+    
+      this.m_currentPath.m_path.m_points = generatedPoints;
+      this.m_path.m_points = generatedPoints;
+
+    }
+
+    generatePointsFromCommandValues(_commandValues, _currentPoints){
+
+
+    /****** 
+      Algorithmic logic :   
+      //'C'+ prev_ep.cp1.x + "," + prev_ep.cp1.y + " " +
+      // ep.cp0.x + "," + ep.cp0.y + " " +
+      // ep.x + "," + ep.y;
+      //
+      // C a,b c,d e,f 
+    
+    **********/
+      var firstEp = null;
+      var points = [];
+      var initVal = _commandValues[1];
+      var prev_ep = new EndPoint(initVal.values[4], initVal.values[5]);
+      prev_ep.cp1.x = initVal.values[0]; prev_ep.cp1.y = initVal.values[1];
+
+      for (let i = 1; i < _commandValues.length; i++) {
+        const el = _commandValues[i];
+
+        // Update prev cp1 values 
+        prev_ep.cp1.x = el.values[0]; prev_ep.cp1.y = el.values[1];
+ 
+        var x = el.values[4];
+        var y = el.values[5];
+
+        var ep = new EndPoint(x, y);
+        ep.cp0.x = el.values[2]; ep.cp0.y = el.values[3]; 
+       
+        if(i > 1)
+          points.push(prev_ep);
+        
+        prev_ep = ep;
+        firstEp = ep;
+
+      }
+    
+      points.unshift(firstEp);
+
+      return points;
+
+    }
+
+    getCommandValues(d) {
+
+      var commaPath = d.replace(/(\d+)\s+(\d+)/g, '$1,$2');
+
+      var regex = /([MC])([^MC]+)/gi;
+ 
+      var commandValues = [];
+ 
+      var match;
+      while ((match = regex.exec(commaPath)) !== null) {
+          var command = match[1];
+          var values = match[2].trim().split(/[,\s]+/).map(parseFloat);
+
+          var item = {type : command , values : values};
+
+          commandValues.push(item);
+
+      }
+
+  
+      return commandValues;
+  }
+ 
 
     finalizePath()
     {
@@ -1610,7 +1712,7 @@ class Loonk {
       setTimeout(() => {
           var shapePoints = this.getPointsAlongCurve(this.m_currentPath.attr("d"));
           this.m_currentPath.m_shapePoints = shapePoints;
-      }, 100); // In order to close without delay the path
+      }, COMPUTE_INTERNAL_POINTS_DELAY); // In order to close without delay the path
 
     }
 
