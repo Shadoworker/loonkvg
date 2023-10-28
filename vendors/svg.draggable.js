@@ -119,9 +119,8 @@
 
           var elType = this.el.type;
           if(elType == "path")
-          {
-            var newPath = this.el.attr("d");
-            this._loonki.updateElementPoints(newPath, this.el);
+          { 
+            this._loonki.selectPath(this.el);
           }
 
         }
@@ -182,9 +181,6 @@
           this._loonki.updateElementPoints(newPath, this.el);
         }
    
-        
-        console.log(this.el.type)
-
         this.init(true);
       }
     }]);

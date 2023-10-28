@@ -8,15 +8,25 @@ SVG.extend(SVG.Element, {
 
       // Add a click event listener to toggle selection
       this.click(function() {
-          
+        
+
           console.log(_loonki.getMenuContext())
 
           if(_loonki.getMenuContext() == MENU_CONTEXT.EDIT)
           {
+            var elType = this.type;
+            if(elType == "path")
+            {
+              _loonki.selectPath(this);
+
+              var newPath = this.attr("d");
+              _loonki.updateElementPoints(newPath, this);
+            }
+       
             this.toggleClass('selected');
 
-            console.log("Edit")
             _loonki.activatePath(this)
+
           }
       });
 

@@ -374,6 +374,7 @@ class Loonk {
       ControlPoint.prototype.m_controls = this.m_controls
       EndPoint.prototype.m_controls = this.m_controls
       
+      
       this.m_path = new Path();
       this.m_paths.push(this.m_path)
       
@@ -392,6 +393,8 @@ class Loonk {
       this.initSelectable(this.m_currentPath)
 
       this.setCursor(CURSOR_CONTEXT.DRAW)
+
+      this.bringToTop(this.m_controls)
 
     }
 
@@ -445,10 +448,19 @@ class Loonk {
 
     
     // select a path and (re)activate it
-    selectPath(e)
+    selectPath(elem)
     {
-      var target = e.target;
-      this.m_path = target.m_path; // Set new path to this element m_path property
+      this.m_currentPath = elem;
+      this.m_path = this.m_currentPath.m_path; // Set new path to this element m_path property
+
+      // console.log("---Selected---")
+      // console.log(this.m_currentPath)
+    }
+
+    bringToTop(_elem)
+    {
+      var svgLastChild = this.m_svg.lastElementChild;
+      svgLastChild.insertAdjacentElement("afterend", _elem)
     }
 
     getMenuContext()
@@ -695,11 +707,9 @@ class Loonk {
             // Get Internal points...
             // this.updatePathInternalPoints(); 
             
-            console.log(path)
+            this.bringToTop(this.m_controls); 
 
-            // this.m_currentPath.attr(this.m_generatedPath)
-            // this.m_currentPath.fill("yellow")
-            // this.m_currentPath.draggable();
+            // console.log(path)
             
           }
 
@@ -1443,7 +1453,9 @@ class Loonk {
     {
       let group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
       group.classList.add("loonk_controls_box");
+       
       this.m_svg.appendChild(group)
+
       this.m_controls = group;
       return group;
     }
@@ -1539,7 +1551,6 @@ class Loonk {
 
       // Update selection
       this.updateSelection();
-      // this.m_generatedPath = '';
 
       let len = this.m_path.m_points.length
       for(let i = 0; i < len; i++) {
@@ -1571,16 +1582,10 @@ class Loonk {
     updateElementPoints(_newPath, _elem){
       
       var _currentPoints = _elem.m_path.m_points;
-
-      console.log(_currentPoints)
-      // var newPoints = this.convertPathToPoints(_newPath, _currentPoints);
-      // var _newPoints = this.extractMCParts(_newPath, _currentPoints);
-
+ 
       var commandValues = this.getCommandValues(_newPath)
       var generatedPoints = this.generatePointsFromCommandValues(commandValues, _currentPoints)
 
-      // console.log(generatedPoints)
-    
       this.m_currentPath.m_path.m_points = generatedPoints;
       this.m_path.m_points = generatedPoints;
 
@@ -1589,27 +1594,39 @@ class Loonk {
     generatePointsFromCommandValues(_commandValues, _currentPoints){
 
 
-    /****** 
-      Algorithmic logic :   
-      //'C'+ prev_ep.cp1.x + "," + prev_ep.cp1.y + " " +
-      // ep.cp0.x + "," + ep.cp0.y + " " +
-      // ep.x + "," + ep.y;
-      //
-      // C a,b c,d e,f 
-    
-    **********/
+      /******************************************************
+      |
+      |  Algorithmic logic :   
+      |  
+      |  'C'+ prev_ep.cp1.x + "," + prev_ep.cp1.y + " " +
+      |   ep.cp0.x + "," + ep.cp0.y + " " +
+      |   ep.x + "," + ep.y;
+      |  
+      |   C a,b c,d e,f 
+      |
+      *******************************************************/
+
       var firstEp = null;
       var points = [];
       var initVal = _commandValues[1];
       var prev_ep = new EndPoint(initVal.values[4], initVal.values[5]);
       prev_ep.cp1.x = initVal.values[0]; prev_ep.cp1.y = initVal.values[1];
-
+      
       for (let i = 1; i < _commandValues.length; i++) {
         const el = _commandValues[i];
 
         // Update prev cp1 values 
         prev_ep.cp1.x = el.values[0]; prev_ep.cp1.y = el.values[1];
- 
+        
+        // Update extra properties
+        if(_currentPoints[i] != undefined)
+        {
+          var currentCorrespondingItem = _currentPoints[i];
+          prev_ep.cpBalance = currentCorrespondingItem.cpBalance;
+          prev_ep.element = currentCorrespondingItem.element;
+          prev_ep.selected = currentCorrespondingItem.selected;
+        }
+
         var x = el.values[4];
         var y = el.values[5];
 
@@ -1621,9 +1638,19 @@ class Loonk {
         
         prev_ep = ep;
         firstEp = ep;
+       
 
       }
-    
+ 
+       // Update extra properties
+       if(_currentPoints[0] != undefined)
+       {
+         currentCorrespondingItem = _currentPoints[0];
+         firstEp.cpBalance = currentCorrespondingItem.cpBalance;
+         firstEp.element = currentCorrespondingItem.element;
+         firstEp.selected = currentCorrespondingItem.selected;
+       }
+
       points.unshift(firstEp);
 
       return points;
