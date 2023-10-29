@@ -398,6 +398,31 @@ class Loonk {
 
     }
 
+    enterDrawState()
+    {
+      console.log("DRAW CONTEXT")
+
+      this.m_menuContext = MENU_CONTEXT.DRAW;
+      if(this.m_drawState == DRAW_STATE.NONE)
+      {
+        this.initPath();
+      }
+    }
+
+    enterEditState()
+    {
+      this.quitDrawState();
+      this.m_menuContext = MENU_CONTEXT.EDIT;
+      this.setCursor(CURSOR_CONTEXT.DRAW)
+    }
+
+    enterDragState()
+    {
+      this.quitDrawState();
+      this.m_menuContext = MENU_CONTEXT.MOVE;
+      this.setCursor(CURSOR_CONTEXT.MOVE)
+    }
+
     quitDrawState()
     {
       this.resetPath();
@@ -725,29 +750,19 @@ class Loonk {
       // Re-Start new Pen tool
       if(e.code == P_DOWN_KEY)
       {
-        console.log("DRAW CONTEXT")
-
-        this.m_menuContext = MENU_CONTEXT.DRAW;
-        if(this.m_drawState == DRAW_STATE.NONE)
-        {
-          this.initPath();
-        }
+        this.enterDrawState();
       }
 
       if(e.code == D_DOWN_KEY)
       {
         console.log("DRAG CONTEXT")
-        this.quitDrawState();
-        this.m_menuContext = MENU_CONTEXT.MOVE;
-        this.setCursor(CURSOR_CONTEXT.MOVE)
+        this.enterDragState();
       }
 
       if(e.code == E_DOWN_KEY)
       {
         console.log("EDIT CONTEXT")
-        this.quitDrawState();
-        this.m_menuContext = MENU_CONTEXT.EDIT;
-        this.setCursor(CURSOR_CONTEXT.DRAW)
+        this.enterEditState();
 
       }
 
@@ -776,6 +791,8 @@ class Loonk {
       this.m_svg.addEventListener('mouseup', listeners.mouseup, false)
       document.addEventListener('keydown', listeners.keydown, false)
       document.addEventListener('keyup', listeners.keyup, false)
+
+      window._loonki = this;
     }
   
     distanceOfPoint(x1, y1, x2, y2) {
@@ -1769,6 +1786,14 @@ window.addEventListener('load',()=>{
     let loonk = new Loonk()
     loonk.start()
     // loonk.initPath();
+
+    // Create manually svgjs native elements or bootstrap methods to create them in Loonkvg
+    var rect = window.m_svgIntance.rect(100, 100).attr({
+        fill: '#f06'
+    })
+
+    rect.draggable(loonk);
+    
 
 }, false);
  

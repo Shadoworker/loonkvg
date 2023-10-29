@@ -93,7 +93,35 @@
                 stroke: red;
                 stroke-dasharray: 2px;
         }
+        .menu{
+            display: flex;
+            flex-direction: column;
+            margin: 10px;
+            justify-content: space-around;
+        }
+
+        .menu_btn{
+
+            padding: 3px 5px;
+            margin: 10px;
+        }
+        .menu_btn img{
+            width: 20px;
+            height: 20px;
+            margin-top: 4px;
+            pointer-events: none;
+        }
+        .menu_btn:active{
+
+            background-color: #ab728c;
+        }
     </style>
+
+    <div class="menu">
+        <button class="menu_btn" onclick="selectBtn(event, 1)" ><img src="./assets/icons/cursor_pen.svg" alt=""></button>      <!-- DRAW -->
+        <button class="menu_btn" onclick="selectBtn(event, 2)"><img src="./assets/icons/cursor_arrow.svg" alt=""></button>    <!-- EDIT -->
+        <button class="menu_btn" onclick="selectBtn(event, 3)"><img src="./assets/icons/cursor_move.svg" alt=""></button>     <!-- DRAG -->
+    </div>
 
 
     <svg xmlns="http://www.w3.org/2000/svg" id="main-loonk-svg" width="0" height="0">
@@ -102,15 +130,49 @@
 
 
     <script>
+
+        function selectBtn(e,i){
+            var btn = e.target;
+
+            document.querySelectorAll(".menu_btn").forEach(el => {
+                el.style.backgroundColor = '#fff';
+            });
+
+            btn.style.backgroundColor = '#ab728c';
+
+            // var MENU_CONTEXT = {
+            //     0:"",
+            //     1:"pen",
+            //     2:"arrow",
+            //     3:"move",
+            // }
+            switch (i) {
+                case 1:
+                    window._loonki.enterDrawState()
+                    break;
+
+                case 2:
+                    window._loonki.enterEditState()
+                    break;
+            
+                case 3:
+                    window._loonki.enterDragState()
+                    break;
+        
+                default:
+                    break;
+            }
+        
+        }
+
+    </script>
+
+
+    <script>
         const MAINSVGID = "#main-loonk-svg";
 
         window.m_svgIntance = SVG(MAINSVGID).addTo('body').size(800, 600)
 
-        var rect = window.m_svgIntance.rect(100, 100).attr({
-            fill: '#f06'
-        })
-
-        // rect.draggable();
 
 
         // var path = window.m_svgIntance.path('M233.18164848974922,135C233.18164848974922,135 220.18164848974922,272 220.18164848974922,272C220.18164848974922,272 251.02954784592586,298.36230488453776 279.18164848974925,293C321.18164848974925,285 338.18164848974925,236 338.18164848974925,236C338.18164848974925,236 233.18164848974922,135 233.18164848974922,135')
