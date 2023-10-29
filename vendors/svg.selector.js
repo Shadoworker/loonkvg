@@ -9,8 +9,7 @@ SVG.extend(SVG.Element, {
       // Add a click event listener to toggle selection
       this.click(function() {
         
-
-          console.log(_loonki.getMenuContext())
+          // console.log(_loonki.getMenuContext())
 
           if(_loonki.getMenuContext() == MENU_CONTEXT.EDIT)
           {
@@ -28,6 +27,11 @@ SVG.extend(SVG.Element, {
             _loonki.activatePath(this)
 
           }
+          else if(_loonki.getMenuContext() == MENU_CONTEXT.SELECT)
+          {
+            window.displayItemProperties(this)
+          }
+
       });
 
       // Return the modified element

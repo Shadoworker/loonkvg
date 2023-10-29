@@ -25,13 +25,13 @@
 
   const MENU_CONTEXT = {
     NONE:"",
-    MOVE:"move",
+    SELECT:"select",
     DRAW:"pen",
     EDIT:"arrow"
   }
 
   const CURSOR_CONTEXT = {...MENU_CONTEXT};
-  CURSOR_CONTEXT.MOVE = "arrow";
+  CURSOR_CONTEXT.SELECT = "select";
 
   // States
   const DRAW_STATE = {
@@ -52,6 +52,12 @@
     ACTIVE:1,
     HOVERED:2,
     SELECTED:3
+  }
+
+
+  const APP_MODE = {
+    CREATE_MODE:"create",
+    ANIME_MODE:"anime"
   }
 
 
@@ -323,7 +329,8 @@ class Loonk {
     this.m_drawState = DRAW_STATE.NONE;
     this.m_pathState = PATH_STATE.NONE; 
     this.m_menuContext = MENU_CONTEXT.NONE; 
-    
+    this.m_appMode = APP_MODE.CREATE_MODE; 
+
 
   }
     start () {
@@ -419,8 +426,8 @@ class Loonk {
     enterDragState()
     {
       this.quitDrawState();
-      this.m_menuContext = MENU_CONTEXT.MOVE;
-      this.setCursor(CURSOR_CONTEXT.MOVE)
+      this.m_menuContext = MENU_CONTEXT.SELECT;
+      this.setCursor(CURSOR_CONTEXT.SELECT)
     }
 
     quitDrawState()
@@ -430,7 +437,7 @@ class Loonk {
       this.m_drawState = DRAW_STATE.NONE;
       this.m_mouseState = MOUSE_STATE.DEFAULT;
       this.m_pathState = PATH_STATE.NONE;
-      this.m_menuContext = MENU_CONTEXT.MOVE;
+      this.m_menuContext = MENU_CONTEXT.SELECT;
 
       this.removeHelperPath();
       this.removePredictorPath();
@@ -440,6 +447,7 @@ class Loonk {
       this.m_svg.removeEventListener('mousemove', this.initSelectableMoveHandler, true)
     }
 
+    
     initSelectable(_elem)
     {
        
@@ -471,6 +479,16 @@ class Loonk {
 
     }
 
+
+    initTimeline()
+    {
+      if(this.m_timeline == null)
+      {
+        this.m_timeline = anime.timeline({
+          easing: 'linear'
+        });
+      }
+    }
     
     // select a path and (re)activate it
     selectPath(elem)
@@ -724,6 +742,7 @@ class Loonk {
             this.m_currentPath.remove(); // remove helper
 
             var path = window.m_svgIntance.path(this.m_generatedPath)
+            path.attr('id', LOONK_PATH_CLASS+"_"+this.m_pathElements.length)
             path.m_path = this.m_currentPath.m_path;
             path.fill("#fff")
             path.selectize(this)
@@ -1408,7 +1427,21 @@ class Loonk {
       this.setCursor(CURSOR_CONTEXT.EDIT)
 
     }
- 
+    
+    setAppMode(_mode)
+    {
+      this.m_appMode = _mode;
+    }
+
+    enterCreateMode(){
+      this.setAppMode(APP_MODE.CREATE_MODE)
+    }
+    
+    enterAnimeMode(){
+      this.setAppMode(APP_MODE.ANIME_MODE)
+      this.initTimeline();
+    }
+
     setCursor(_cursor)
     {
       var toremove = [];
@@ -1789,10 +1822,15 @@ window.addEventListener('load',()=>{
 
     // Create manually svgjs native elements or bootstrap methods to create them in Loonkvg
     var rect = window.m_svgIntance.rect(100, 100).attr({
-        fill: '#f06'
+        fill: '#f06',
+        id: LOONK_PATH_CLASS+"_"+loonk.m_pathElements.length,
     })
+    
+    loonk.m_pathElements.push(rect);
 
+    
     rect.draggable(loonk);
+    rect.selectize(loonk);
     
 
 }, false);

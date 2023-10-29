@@ -6,9 +6,12 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SVGLoonk</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <script src="./vendors/svg.js"></script>
     <script src="./vendors/svg.draggable.js"></script>
     <script src="./vendors/svg.selector.js"></script>
+    <script src="./vendors/anime.min.js"></script>
     <script src="./vendors/loonk.js"></script>
 </head>
 
@@ -20,6 +23,7 @@
             align-items: center;
             justify-content: center;
             background-color: #363636;
+            overflow: hidden;
         }
 
         svg {
@@ -57,8 +61,8 @@
             cursor: url(assets/icons/cursor_insert.svg) 0.1 0.1, pointer;
         }
 
-        .cursor_move {
-            cursor: url(assets/icons/cursor_move.svg) 0.1 0.1, pointer;
+        .cursor_select {
+            cursor: url(assets/icons/cursor_select.svg) 0.1 0.1, pointer;
         }
 
         .loonk_scene_path {
@@ -95,8 +99,10 @@
         }
         .menu{
             display: flex;
-            flex-direction: column;
+            flex-direction: row;
             margin: 10px;
+            align-self: center;
+            margin: 0px auto;
             justify-content: space-around;
         }
 
@@ -104,32 +110,420 @@
 
             padding: 3px 5px;
             margin: 10px;
+            border: none;
+            cursor: pointer;
         }
         .menu_btn img{
             width: 20px;
             height: 20px;
-            margin-top: 4px;
+            /* margin-top: 4px; */
             pointer-events: none;
         }
-        .menu_btn:active{
+        .menu_btn:hover{
 
             background-color: #ab728c;
+            transition: all ease-out 0.3s;
         }
+
+        .app{
+            display: flex;
+            width: 100% ;
+            flex-direction: column;
+        }
+
+        .block-container{
+            display: flex;
+            width: 100% ;
+            flex-direction: row;
+        }
+
+        .block-header{
+            height: 36px;
+            background-color: #fff;
+        }
+
+        .block-body{
+
+            min-height: 100px;
+        }
+
+        .block{
+            display: flex;
+            /* border: solid 1px gray; */
+            width: 100%;
+        }
+
+        .block.app-left-block{
+            width: 25%;
+            height: 100%;
+        }
+
+        .block.app-central-block{
+            display: flex;
+            flex-direction: column;
+            width: 82%;
+            height: 100%;
+        }
+        .block.app-right-block{
+            width: 18%;
+            height: 100%;
+            border-left: solid 1px gray;
+            flex-direction: column;
+
+        }
+
+        .block.app-central-inner-block{
+            display: flex;
+            flex-direction: row;
+            height: 76%
+        }
+
+        .block.app-scene-block{
+            height: 100%
+        }
+
+        .block.app-timeline-block{
+            position: relative;
+            flex-direction: column;
+            height: 24%;
+            border-top: solid 1px gray;
+
+        }
+        #main-loonk-svg{
+            /* width: 99.8% !important; */
+            position: relative;
+            z-index: 2;
+            border-bottom: none;
+            border-right: none;
+        }
+
+        .timeline-bottom-block
+        {
+            display: flex;
+            height: 85%;
+            border-top: solid 1px gray;
+        }
+        .timeline-bottom-block-items
+        {
+            width: 20%;
+            height: 100%;
+            border-right: solid 1px gray;
+            overflow-y: scroll;
+        }
+
+        .timeline-bottom-block-keyframes
+        {
+            position: relative;
+            width: 80%;
+            height: 100%;
+            overflow-y: scroll;
+        }
+
+        .timeline-slider{
+            -webkit-appearance: none;
+            background-color: #fff;
+        }
+
+        .timeline-slider::-webkit-slider-thumb {
+            -webkit-appearance: none; /* Override default look */
+            appearance: none;
+            width: 10px; /* Set a specific slider handle width */
+            height: 10px; /* Slider handle height */
+            border-radius: 50%;
+            background: #5906a7; /* Green background */
+            cursor: pointer; /* Cursor on hover */
+        }
+
+
+        .item-line-block{
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        .item-line-block-item
+        {
+            width: 100%;
+            display: flex;
+            height: 20px;
+            border-bottom: solid 1px gray;
+            font-family: 'Lato';
+            font-weight: bold;
+            color: #fff;
+            text-indent: 5px;
+        }
+        .item-line-block-properties
+        {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .item-line-block-property
+        {
+            width: 100%;
+            display: flex;
+            height: 20px;
+            border-bottom: solid 1px gray;
+            text-indent: 5px;
+            color: #fff;
+            font-family: 'Lato';
+        }
+
+        .item-line-block-property::before {
+            content: "\2022"; /* Unicode character for a bullet point */
+            margin-right: 5px; /* Adjust the spacing between the symbol and text */
+            color: #fff; /* Optional: Set the color of the symbol */
+            font-weight: bold; /* Optional: Set the font weight of the symbol */
+        }
+
+
+        .keyframe-line-block{
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        .keyframe-line-block-item
+        {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            height: 20px;
+            border-bottom: solid 1px gray;
+            font-family: 'Lato';
+            font-weight: bold;
+            color: #fff;
+            text-indent: 5px;
+        }
+        .keyframe-line-block-properties
+        {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .keyframe-line-block-property
+        {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            height: 20px;
+            border-bottom: solid 1px gray;
+            text-indent: 5px;
+            color: #fff;
+            font-family: 'Lato';
+        }
+
+        /* .keyframe-line-block-property::before {
+            content: "\2022";  
+            margin-right: 5px; 
+            color: #fff;  
+            font-weight: bold;  
+        } */
+
+        .keyframe-dot
+        {
+            width: 6px;
+            height: 6px;
+            position: absolute;
+            left: 50%;
+            background-color: #fff;
+            outline: solid 0.5px #a21c58;
+            transform: rotate(135deg);
+        }
+        .main-keyframe-dot
+        {
+            background-color: #ab728c;
+        }
+
+        .input-properties-group{
+            display: flex; 
+            position: relative;
+            width: 90%;
+            margin-left: 5%;
+            margin-bottom: 2px;
+        }
+
+        .input-property-item
+        {
+            display: flex;
+            position: relative;
+            flex: 1;
+            flex-direction: column;
+            color: #fff;
+            padding: 10px;
+        }
+
+        .input-property-item > input{
+            width: 100%;
+            margin-top: 5px;
+        }
+
+        .input-property-item > input[type="number"]{
+            padding-top: 5px;
+            padding-bottom: 5px;
+            width: 100%;
+        }
+        
+
     </style>
 
-    <div class="menu">
-        <button class="menu_btn" onclick="selectBtn(event, 1)" ><img src="./assets/icons/cursor_pen.svg" alt=""></button>      <!-- DRAW -->
-        <button class="menu_btn" onclick="selectBtn(event, 2)"><img src="./assets/icons/cursor_arrow.svg" alt=""></button>    <!-- EDIT -->
-        <button class="menu_btn" onclick="selectBtn(event, 3)"><img src="./assets/icons/cursor_move.svg" alt=""></button>     <!-- DRAG -->
+    <div class="app">
+        <div class="block-container block-header">
+            <span style="align-self: center; margin: 10px; font-family: 'Lato'; font-weight: bold;">AWA</span>
+            <div class="menu">
+                <button class="menu_btn" onclick="selectBtn(event, 1)" ><img src="./assets/icons/cursor_pen.svg" alt=""></button>   
+                <button class="menu_btn" onclick="selectBtn(event, 2)"><img src="./assets/icons/cursor_arrow.svg" alt=""></button>  
+                <button class="menu_btn" onclick="selectBtn(event, 3)"><img src="./assets/icons/cursor_select.svg" alt=""></button>   
+                <div class="menu_btn" style="pointer-events: none;"> | </div>
+                <button class="menu_btn" onclick="enterMode(event, 0)"><img src="./assets/icons/create_mode_icon.svg" alt=""></button>   
+                <button class="menu_btn" onclick="enterMode(event, 1)"><img src="./assets/icons/anim_mode_icon.svg" alt=""></button>   
+            </div>
+        </div>
+        <div class="block-container block-body">
+           
+            <div class="block app-central-block">
+                <div class="block app-central-inner-block">
+                    <div class="block app-left-block">
+                    </div>
+                    <div class="block app-scene-block">
+                        <svg xmlns="http://www.w3.org/2000/svg" id="main-loonk-svg" width="0" height="0">
+
+                        </svg>
+                    </div>
+                    
+                </div>
+                <div class="block app-timeline-block">
+                    <div style="position: relative; display: flex; align-items: center; justify-content: space-around; width: 100%;">
+                        <div class="timeline-controls" style="display: flex; width:20% ;">
+                            <button style="height: 26px; background-color: transparent; color: #fff;" id="playBtn"><i class="material-icons">play_circle_outline</i></button>
+                            <button style="height: 26px; background-color: transparent; color: #fff;" id="pauseBtn"><i class="material-icons">pause_circle_outline</i></button>
+                        </div>
+                       <input class="timeline-slider" type="range" onclick="updateTimelineCurrent(this)" value="0" min="0" max="30000" step="42" style="width: 80%; height: 4px;" >
+                    </div>
+                    <div class="timeline-bottom-block">
+                        
+                        <!-- Items -->
+                        <div class="timeline-bottom-block-items">
+                            
+                            <div class="item-line-block">
+                                <div class="item-line-block-item">
+                                    <span>Rectangle 1</span>
+                                </div>
+                                <div class="item-line-block-properties">
+                                    <div class="item-line-block-property">
+                                        fill
+                                    </div>
+                                    <div class="item-line-block-property">
+                                        color
+                                    </div>
+                                </div>
+                            </div>
+ 
+                           
+                        </div>
+
+                        <!-- Keyframes  -->
+
+                        <div class="timeline-bottom-block-keyframes">
+
+                            <div class="keyframe-line-block">
+                                <div class="keyframe-line-block-item">
+                                    <div class="keyframe-dot main-keyframe-dot"></div>
+                                </div>
+                                <div class="keyframe-line-block-properties">
+                                    <div class="keyframe-line-block-property">
+                                        <div class="keyframe-dot"></div>
+                                    </div>
+                                    <div class="keyframe-line-block-property">
+                                        <div class="keyframe-dot" style="left: 30%;"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="block app-right-block">
+
+                <div class="input-properties-group">
+                    <div class="input-property-item">
+                        <label for="x">x</label>
+                        <input type="number" id="x" name="translateX" onblur="onModifyProperty(this)" onkeyup="blurInput(event, this)" value="0" />
+                    </div>
+                    <div class="input-property-item">
+                        <label for="y">y</label>
+                        <input type="number" id="y" name="translateY" onblur="onModifyProperty(this)" onkeyup="blurInput(event, this)" value="0" />
+                    </div>
+                </div>
+
+                <div class="input-properties-group">
+                    <div class="input-property-item">
+                        <label for="scale">scale</label>
+                        <input type="number" id="scale" name="scale"  onblur="onModifyProperty(this)" onkeyup="blurInput(event, this)" value="0" />
+                    </div>
+                </div>
+
+                <div class="input-properties-group">
+                    <div class="input-property-item">
+                        <label for="rotation">rotation</label>
+                        <input type="number" id="rotation" name="rotate" onblur="onModifyProperty(this)" onkeyup="blurInput(event, this)" value="0" />
+                    </div>
+                </div>
+
+                <div class="input-properties-group">
+                    <div class="input-property-item">
+                        <label for="fill">fill</label>
+                        <input type="color" id="fill" name="fill" onblur="onModifyProperty(this)" onkeyup="blurInput(event, this)" value="#e66465" />
+                    </div>
+                </div>
+
+                <div class="input-properties-group">
+                    <div class="input-property-item">
+                        <label for="strokeWidth">strokeWidth</label>
+                        <input type="number" id="strokeWidth" name="strokeWidth"  onblur="onModifyProperty(this)" onkeyup="blurInput(event, this)" value="0" />
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        
+    </div>
+
+    <!-- <div class="menu">
+        <button class="menu_btn" onclick="selectBtn(event, 1)" ><img src="./assets/icons/cursor_pen.svg" alt=""></button>   
+        <button class="menu_btn" onclick="selectBtn(event, 2)"><img src="./assets/icons/cursor_arrow.svg" alt=""></button>  
+        <button class="menu_btn" onclick="selectBtn(event, 3)"><img src="./assets/icons/cursor_move.svg" alt=""></button>   
     </div>
 
 
     <svg xmlns="http://www.w3.org/2000/svg" id="main-loonk-svg" width="0" height="0">
 
-    </svg>
+    </svg> -->
 
 
     <script>
+
+        var screenHeight = window.innerHeight;
+        document.querySelector(".app").style.height = screenHeight+"px";
+        document.querySelector(".block-body").style.height = (screenHeight-36)+"px";
+
+
+        var itemsBlock = document.querySelector(".timeline-bottom-block-items");
+        var keyframesBlock = document.querySelector(".timeline-bottom-block-keyframes");
+
+        itemsBlock.addEventListener("scroll", function(){
+
+            keyframesBlock.scrollTop = itemsBlock.scrollTop;
+        })
+
+        keyframesBlock.addEventListener("scroll", function(){
+
+            itemsBlock.scrollTop = keyframesBlock.scrollTop;
+        })
+
+
 
         function selectBtn(e,i){
             var btn = e.target;
@@ -159,15 +553,126 @@
         
         }
 
-    </script>
+
+        function enterMode(e,i){
+            var btn = e.target;
+
+            document.querySelectorAll(".menu_btn").forEach(el => {
+                el.style.backgroundColor = '#fff';
+            });
+
+            btn.style.backgroundColor = '#ab728c';
+
+            switch (i) {
+                case 0:
+                    window._loonki.enterCreateMode()
+                    document.querySelector('#main-loonk-svg').style.outline = 'none';
+                    break;
+
+                case 1:
+                    window._loonki.enterAnimeMode()
+                    document.querySelector('#main-loonk-svg').style.outline = 'solid 2px red';
+                    break;
+             
+            }
+        
+        }
 
 
-    <script>
+        window.TIMELINE_LENGTH = 30; // 30sec
+   
+        const SCENE_BLOCK_CLASS = ".app-scene-block";
         const MAINSVGID = "#main-loonk-svg";
 
-        window.m_svgIntance = SVG(MAINSVGID).addTo('body').size(800, 600)
+        window.m_svgIntance = SVG(MAINSVGID).addTo(SCENE_BLOCK_CLASS).size('100%', '100%')
+
+        window.m_timelineCurrent = 0; // current selected timeline time
+
+        window.displayItemProperties = function(_item)
+        {
+            window._selectedItem = _item;
+
+            // console.log(window._selectedItem);
+
+            var itemPosX = _item.x();
+            var itemPosY = _item.y();
+            
+            var itemScale = _item.transform().scaleX || 1;
+
+            var itemRotation = _item.transform().rotate || 0;
+
+            var itemFill = _item.attr('fill');
+
+            var itemStrokeWidth = _item.attr('stroke-width');
+
+            // console.log(
+            //     [
+            //         itemPosX,
+            //         itemPosY,
+            //         itemScale,
+            //         itemRotation,
+            //         itemFill,
+            //         itemStrokeWidth
+            //     ]
+            // )
+
+            document.querySelector("#x").value = itemPosX;
+            document.querySelector("#y").value = itemPosY;
+            document.querySelector("#scale").value = itemScale;
+            document.querySelector("#rotation").value = itemRotation;
+            document.querySelector("#fill").value = itemFill;
+            document.querySelector("#strokeWidth").value = itemStrokeWidth;
+
+        }
 
 
+        function updateTimelineCurrent(_elem){
+            var t = _elem.value;
+            window.m_timelineCurrent = t;
+        }
+
+
+        var playBtn = document.querySelector("#playBtn");
+        var pauseBtn = document.querySelector("#pauseBtn");
+
+        playBtn.addEventListener('click', ()=>{
+            if(window._loonki.m_timeline != null)
+            {   
+                window._loonki.m_timeline.play();
+            }
+        })
+
+        pauseBtn.addEventListener('click', ()=>{
+            if(window._loonki.m_timeline != null)
+                window._loonki.m_timeline.pause();
+        })
+
+        function blurInput(event, _input)
+        {
+            if (event.key === 'Enter') {
+                // Blur the input element when Enter key is pressed
+                _input.blur();
+            }
+        }
+
+        function onModifyProperty(_input){
+
+            var name = _input.name;
+            var value = _input.value;
+
+            // Get selected item ID
+            var _selectedItemID = window._selectedItem.attr("id") 
+
+            var animation = {
+                targets : '#'+_selectedItemID,
+                translateX : value
+            }
+
+            window._loonki.m_timeline.add(animation, window.m_timelineCurrent);
+
+            console.log(window._loonki.m_timeline)
+
+        }
 
         // var path = window.m_svgIntance.path('M233.18164848974922,135C233.18164848974922,135 220.18164848974922,272 220.18164848974922,272C220.18164848974922,272 251.02954784592586,298.36230488453776 279.18164848974925,293C321.18164848974925,285 338.18164848974925,236 338.18164848974925,236C338.18164848974925,236 233.18164848974922,135 233.18164848974922,135')
 

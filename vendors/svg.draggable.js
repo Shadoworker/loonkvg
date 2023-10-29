@@ -77,7 +77,7 @@
       key: "startDrag",
       value: function startDrag(ev) {
 
-        if(this._loonki.getMenuContext() == MENU_CONTEXT.MOVE)
+        if(this._loonki.getMenuContext() == MENU_CONTEXT.SELECT)
         {
 
           var isMouse = !ev.type.indexOf('mouse'); // Check for left button
