@@ -406,7 +406,7 @@
                         <!-- Items -->
                         <div class="timeline-bottom-block-items">
                             
-                            <div class="item-line-block">
+                            <!-- <div class="item-line-block">
                                 <div class="item-line-block-item">
                                     <span>Rectangle 1</span>
                                 </div>
@@ -418,7 +418,7 @@
                                         color
                                     </div>
                                 </div>
-                            </div>
+                            </div> -->
  
                            
                         </div>
@@ -524,6 +524,71 @@
         })
 
 
+        function renderTimelineItems(_items){
+
+            var container = document.querySelector('.timeline-bottom-block-items');
+ 
+            var blocks = '';
+
+            for (let i = 0; i < _items.length; i++) {
+                const item = _items[i];
+
+                blocks += `<div class="item-line-block">
+                                <div class="item-line-block-item">
+                                    <span>${item.name}</span>
+                                </div>
+                                <div class="item-line-block-properties">
+                                    <div class="item-line-block-property">
+                                        fill
+                                    </div>
+                                    <div class="item-line-block-property">
+                                        color
+                                    </div>
+                                </div>
+                            </div>`;
+                
+            }
+
+            container.innerHTML = blocks;
+
+        }
+
+
+        function getTimelineItems()
+        {
+            var children = window._loonki.m_timeline.children;
+
+            var items = [];
+
+            for (let i = 0; i < children.length; i++) {
+                const el = children[i].animations[0];
+
+                // var name = el.animatable.target.attr("name");
+                var name = el.animatable.target.instance.attr("id"); // till we setup name for objects
+                name = name.split("scene_")[1];
+                var id = el.animatable.target.instance.attr("id");
+                var property = el.property;
+                var delay = el.delay;
+
+                var item = {
+                    name : name,
+                    id : id,
+                    property : property,
+                    delay : delay
+                }
+
+                items.push(item);
+                
+            }
+            
+
+            console.log(items)
+            
+            
+            
+        }
+
+        // renderTimelineItems([{name:"Rect 1"}, {name:"Rect 2"}, {name:"Rect 3"}])
 
         function selectBtn(e,i){
             var btn = e.target;
@@ -588,6 +653,8 @@
 
         window.m_timelineCurrent = 0; // current selected timeline time
 
+
+        
         window.displayItemProperties = function(_item)
         {
             window._selectedItem = _item;
@@ -628,7 +695,7 @@
 
         function updateTimelineCurrent(_elem){
             var t = _elem.value;
-            window.m_timelineCurrent = t;
+            window.m_timelineCurrent = parseInt(t);
         }
 
 
@@ -665,12 +732,15 @@
 
             var animation = {
                 targets : '#'+_selectedItemID,
-                translateX : value
+                [name] : value,
+                delay : window.m_timelineCurrent
             }
 
-            window._loonki.m_timeline.add(animation, window.m_timelineCurrent);
+            window._loonki.m_timeline.add(animation);
 
             console.log(window._loonki.m_timeline)
+            
+            getTimelineItems();
 
         }
 
