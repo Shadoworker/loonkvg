@@ -479,12 +479,12 @@
                     </div>
                 </div>
 
-                <div class="input-properties-group">
+                <!-- <div class="input-properties-group">
                     <div class="input-property-item">
                         <label for="strokeWidth">strokeWidth</label>
                         <input type="number" id="strokeWidth" name="strokeWidth"  onblur="onModifyProperty(this)" onkeyup="blurInput(event, this)" value="0" />
                     </div>
-                </div>
+                </div> -->
 
             </div>
         </div>
@@ -568,13 +568,13 @@
                 name = name.split("scene_")[1];
                 var id = el.animatable.target.instance.attr("id");
                 var property = el.property;
-                var delay = el.delay;
+                var offset = el.offset;
 
                 var item = {
                     name : name,
                     id : id,
                     property : property,
-                    delay : delay
+                    offset : offset
                 }
 
                 items.push(item);
@@ -582,8 +582,8 @@
             }
             
 
-            console.log(items)
-            
+            // console.log(items)
+            return items;
             
             
         }
@@ -670,7 +670,7 @@
 
             var itemFill = _item.attr('fill');
 
-            var itemStrokeWidth = _item.attr('stroke-width');
+            // var itemStrokeWidth = _item.attr('stroke-width');
 
             // console.log(
             //     [
@@ -688,7 +688,7 @@
             document.querySelector("#scale").value = itemScale;
             document.querySelector("#rotation").value = itemRotation;
             document.querySelector("#fill").value = itemFill;
-            document.querySelector("#strokeWidth").value = itemStrokeWidth;
+            // document.querySelector("#strokeWidth").value = itemStrokeWidth;
 
         }
 
@@ -718,7 +718,7 @@
         {
             if (event.key === 'Enter') {
                 // Blur the input element when Enter key is pressed
-                _input.blur();
+                // _input.blur();
             }
         }
 
@@ -733,14 +733,15 @@
             var animation = {
                 targets : '#'+_selectedItemID,
                 [name] : value,
-                delay : window.m_timelineCurrent
+                duration:500,
             }
 
-            window._loonki.m_timeline.add(animation);
+            window._loonki.m_timeline.add(animation,window.m_timelineCurrent);
 
             console.log(window._loonki.m_timeline)
             
-            getTimelineItems();
+            var timelineItems = getTimelineItems();
+            // renderTimelineItems()
 
         }
 
