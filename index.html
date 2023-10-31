@@ -568,20 +568,21 @@
                 name = name.split("scene_")[1];
                 var id = el.animatable.target.instance.attr("id");
                 var property = el.property;
-                var offset = el.offset;
+                var offset = children[i].timelineOffset;
+                var duration = el.duration;
 
                 var item = {
                     name : name,
                     id : id,
                     property : property,
-                    offset : offset
+                    offset : offset,
+                    duration : duration,
                 }
 
                 items.push(item);
                 
             }
             
-
             // console.log(items)
             return items;
             
@@ -722,6 +723,7 @@
             }
         }
 
+
         function onModifyProperty(_input){
 
             var name = _input.name;
@@ -730,13 +732,39 @@
             // Get selected item ID
             var _selectedItemID = window._selectedItem.attr("id") 
 
-            var animation = {
-                targets : '#'+_selectedItemID,
-                [name] : value,
-                duration:500,
+            // Get timeline and find for that item and that property the one having the duration... less than the current time
+            var timelineItems = getTimelineItems();
+            var elementItems = timelineItems.filter(function(obj) {
+                return (obj["id"] === _selectedItemID && obj["property"] == name);
+            });
+
+            var offset = 0;
+
+            if(elementItems.length > 0)
+            {
+                elementItems.sort(function(a,b){
+                    return b.duration - a.duration
+                })
+
+                for (let i = 0; i < elementItems.length; i++) {
+
+                    const el = elementItems[i];
+                    if(el <= window.m_timelineCurrent)
+                    {
+                        offset = el.duration + el.offset;
+                        break;
+                    }
+                    
+                }
             }
 
-            window._loonki.m_timeline.add(animation,window.m_timelineCurrent);
+            var duration = window.m_timelineCurrent - offset;
+ 
+            window._loonki.m_timeline.add({
+                targets : '#'+_selectedItemID,
+                [name] : value,
+                duration: duration,
+            }, offset);
 
             console.log(window._loonki.m_timeline)
             

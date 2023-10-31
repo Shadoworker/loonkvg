@@ -485,7 +485,8 @@ class Loonk {
       if(this.m_timeline == null)
       {
         this.m_timeline = anime.timeline({
-          easing: 'linear'
+          easing: 'linear',
+          duration : 30000
         });
       }
     }
