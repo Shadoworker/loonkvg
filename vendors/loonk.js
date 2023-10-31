@@ -332,6 +332,10 @@ class Loonk {
     this.m_appMode = APP_MODE.CREATE_MODE; 
 
 
+    this.m_animationsCounter = 0;
+
+
+
   }
     start () {
   
@@ -489,6 +493,12 @@ class Loonk {
           duration : 30000
         });
       }
+    }
+
+
+    updateAnimationsCounter()
+    {
+      this.m_animationsCounter++;
     }
     
     // select a path and (re)activate it
@@ -1822,16 +1832,31 @@ window.addEventListener('load',()=>{
     // loonk.initPath();
 
     // Create manually svgjs native elements or bootstrap methods to create them in Loonkvg
-    var rect = window.m_svgIntance.rect(100, 100).attr({
+    var rect = window.m_svgIntance.rect(80, 80).attr({
+        x : 10,
+        y : 20,
         fill: '#f06',
         id: LOONK_PATH_CLASS+"_"+loonk.m_pathElements.length,
     })
     
     loonk.m_pathElements.push(rect);
 
+    var circle = window.m_svgIntance.circle(80, 80).attr({
+      cx : 150,
+      cy : 120,
+      fill: '#ecaf2b',
+      id: LOONK_PATH_CLASS+"_"+loonk.m_pathElements.length,
+    })
     
+    loonk.m_pathElements.push(circle);
+
+
+
     rect.draggable(loonk);
     rect.selectize(loonk);
+    
+    circle.draggable(loonk);
+    circle.selectize(loonk);
     
 
 }, false);

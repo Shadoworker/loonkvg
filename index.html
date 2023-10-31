@@ -11,7 +11,8 @@
     <script src="./vendors/svg.js"></script>
     <script src="./vendors/svg.draggable.js"></script>
     <script src="./vendors/svg.selector.js"></script>
-    <script src="./vendors/anime.min.js"></script>
+    <script src="./vendors/anime.js"></script>
+    <!-- <script src="./vendors/anime.min.js"></script> -->
     <script src="./vendors/loonk.js"></script>
 </head>
 
@@ -372,9 +373,9 @@
         <div class="block-container block-header">
             <span style="align-self: center; margin: 10px; font-family: 'Lato'; font-weight: bold;">AWA</span>
             <div class="menu">
-                <button class="menu_btn" onclick="selectBtn(event, 1)" ><img src="./assets/icons/cursor_pen.svg" alt=""></button>   
-                <button class="menu_btn" onclick="selectBtn(event, 2)"><img src="./assets/icons/cursor_arrow.svg" alt=""></button>  
-                <button class="menu_btn" onclick="selectBtn(event, 3)"><img src="./assets/icons/cursor_select.svg" alt=""></button>   
+                <button class="menu_btn btn_draw" onclick="selectBtn(event.target, 1)" ><img src="./assets/icons/cursor_pen.svg" alt=""></button>   
+                <button class="menu_btn btn_edit" onclick="selectBtn(event.target, 2)"><img src="./assets/icons/cursor_arrow.svg" alt=""></button>  
+                <button class="menu_btn btn_select" onclick="selectBtn(event.target, 3)"><img src="./assets/icons/cursor_select.svg" alt=""></button>   
                 <div class="menu_btn" style="pointer-events: none;"> | </div>
                 <button class="menu_btn" onclick="enterMode(event, 0)"><img src="./assets/icons/create_mode_icon.svg" alt=""></button>   
                 <button class="menu_btn" onclick="enterMode(event, 1)"><img src="./assets/icons/anim_mode_icon.svg" alt=""></button>   
@@ -426,7 +427,7 @@
                         <!-- Keyframes  -->
 
                         <div class="timeline-bottom-block-keyframes">
-
+<!-- 
                             <div class="keyframe-line-block">
                                 <div class="keyframe-line-block-item">
                                     <div class="keyframe-dot main-keyframe-dot"></div>
@@ -439,7 +440,7 @@
                                         <div class="keyframe-dot" style="left: 30%;"></div>
                                     </div>
                                 </div>
-                            </div>
+                            </div> -->
 
                         </div>
                     </div>
@@ -591,8 +592,8 @@
 
         // renderTimelineItems([{name:"Rect 1"}, {name:"Rect 2"}, {name:"Rect 3"}])
 
-        function selectBtn(e,i){
-            var btn = e.target;
+        function selectBtn(_t,i){
+            var btn = _t;
 
             document.querySelectorAll(".menu_btn").forEach(el => {
                 el.style.backgroundColor = '#fff';
@@ -638,6 +639,8 @@
                 case 1:
                     window._loonki.enterAnimeMode()
                     document.querySelector('#main-loonk-svg').style.outline = 'solid 2px red';
+                    
+                    selectBtn(document.querySelector('.btn_select'), 3)
                     break;
              
             }
@@ -723,7 +726,7 @@
             }
         }
 
-
+ 
         function onModifyProperty(_input){
 
             var name = _input.name;
@@ -751,7 +754,7 @@
                     const el = elementItems[i];
                     if(el <= window.m_timelineCurrent)
                     {
-                        offset = el.duration + el.offset;
+                        offset = el.duration ;//+ el.offset;
                         break;
                     }
                     
@@ -759,12 +762,24 @@
             }
 
             var duration = window.m_timelineCurrent - offset;
- 
+            
+            var animationID = _selectedItemID+"_"+name+"_"+window._loonki.m_animationsCounter;
+            
+            var _startAt = "+="+offset;
+
             window._loonki.m_timeline.add({
                 targets : '#'+_selectedItemID,
-                [name] : value,
-                duration: duration,
-            }, offset);
+                [name] : {
+                    value : value,
+                    // delay : 200,
+                    duration: duration,
+                    _animId : animationID
+                }
+            }, _startAt);
+ 
+
+            // Update m_animationsCounter
+            window._loonki.updateAnimationsCounter();
 
             console.log(window._loonki.m_timeline)
             
